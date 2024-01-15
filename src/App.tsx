@@ -32,24 +32,26 @@ const App: React.FC = () => {
 
       for (let i = 0; i < copyBlocks.length; i++) {
         const block = copyBlocks[i];
-        if (
-          block.width <= currentSheet.remainingArea / sheetSize.height &&
-          block.count > 0
-        ) {
-          const maxCols = Math.floor(sheetSize.width / block.width);
-          const maxRows = Math.floor(sheetSize.height / block.height);
 
-          const minCount = Math.min(maxCols * maxRows, block.count);
+        if (block.width > sheetSize.width || block.height > sheetSize.height) {
+          // Блок не може бути розміщений, переходимо до наступного
+          continue;
+        }
 
-          currentSheet.blocks.push({ ...block, count: minCount });
-          currentSheet.remainingArea -= minCount * block.width * block.height;
+        const maxCols = Math.floor(
+          currentSheet.remainingArea / (block.width * sheetSize.height)
+        );
+        const maxRows = Math.floor(sheetSize.height / block.height);
+        const minCount = Math.min(maxCols * maxRows, block.count);
 
-          copyBlocks[i].count -= minCount;
+        currentSheet.blocks.push({ ...block, count: minCount });
+        currentSheet.remainingArea -= minCount * block.width * block.height;
 
-          if (copyBlocks[i].count === 0) {
-            copyBlocks.splice(i, 1);
-            i--;
-          }
+        copyBlocks[i].count -= minCount;
+
+        if (copyBlocks[i].count === 0) {
+          copyBlocks.splice(i, 1);
+          i--;
         }
       }
 
@@ -87,7 +89,7 @@ const App: React.FC = () => {
                 border: "1px black solid",
               }}
             >
-              <BlockList sheet={sheet} />
+              <BlockList sheet={sheet} sheetSize={sheetSize} />
             </div>
           </li>
         ))}
